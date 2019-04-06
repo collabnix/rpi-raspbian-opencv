@@ -22,6 +22,11 @@ pidfile=/var/run/lock/rpi-raspbian-opencv.pid
 [ -f $pidfile ] && kill -0 `cat $pidfile` && exit
 echo "$$" > $pidfile
 
+echo 
+echo 
+echo --------- Starting ------------
+echo 
+
 #Get the ID of the resin/rpi-raspbain image tagged as latest.
 fn_getID "latest"
 latestID=$fn_getID
@@ -30,11 +35,11 @@ latestID=$fn_getID
 rebuild=$1
 
 opencv_versRaw=`./getOpenCVTags.sh`
-#Array of supported OpenCV versions, latest version at the END!
+#Array of supported OpenCV versions, latest version at the Start!
 opencv_vers=($opencv_versRaw)
 
-#Grab latest version (should be last in array)
-opencv_latest=${opencv_vers[-1]}
+#Grab latest version (was the last in array (index -1), now the first, as the order changed.)
+opencv_latest=${opencv_vers[0]}
 #build date.
 today=$(date -u +'%Y%m%d')
 imageBuilt=0
@@ -46,18 +51,33 @@ for D in *; do
 	fn_getID ${D}
 	myID=$fn_getID
 	lastID=$( cat ./${D}/rpi-raspbian.id )
+	lastMaj=0
 	if [[ ("$myID" != "$lastID") || ("$rebuild" == "1") ]]
 	then
 		for opencv_ver in "${opencv_vers[@]}"; do
 			echo "Rebuilding for OpenCV $opencv_ver."
 			myTag=sgtwilko/rpi-raspbian-opencv:${D}.$today-$opencv_ver
+			majmin=$(echo "$opencv_ver" | awk -F. '{print $1"."$2}')
+			major=$(echo "$opencv_ver" | awk -F. '{print $1}')
 			#echo "$myTag"
 			time docker build --build-arg OPENCV_VERSION=$opencv_ver --build-arg RASPBIAN_VERSION=${D} --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` --build-arg VCS_REF=`git rev-parse --short HEAD` -t $myTag ./${D}
-			rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+			rc=$?; 
+			date
+			echo "done building for $opencv_ver."
+			if [[ $rc != 0 ]]; 
+			then 
+				echo "Error building: $rc"
+				exit $rc; 
+			fi
 			#Image built ok...
 			((imageBuilt++))
 			docker push $myTag
 			fn_addTag ${D}-$opencv_ver
+			fn_addTag ${D}-$majmin
+			if [[ ("$major" != "$lastMaj") ]]
+			then
+				fn_addTag ${D}-$major
+			fi
 			if [[ ("$opencv_ver" == "$opencv_latest") ]]
 			then
 				fn_addTag ${D}-latest
@@ -69,8 +89,14 @@ for D in *; do
 			fi
 			if [[ ("$myID" == "$latestID") ]]
 			then
+				fn_addTag latest-$majmin
 				fn_addTag latest-$opencv_ver
+				if [[ ("$major" != "$lastMaj") ]]
+				then
+					fn_addTag latest-$major
+				fi
 			fi
+			lastMaj=$major
 			#docker push
 			echo "$myID" > ./${D}/rpi-raspbian.id
 		done
@@ -78,9 +104,12 @@ for D in *; do
     fi
 done
 
+echo 
+echo ----------- All Done! -----------------
 #if (( $imageBuilt > 0 ))
 #then
 #	docker push sgtwilko/rpi-raspbian-opencv
 #fi
 echo "$opencv_versRaw" > openCVVers.log
 rm $pidfile
+echo 

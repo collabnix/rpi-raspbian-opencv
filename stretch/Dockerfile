@@ -42,7 +42,7 @@ RUN apt-get update \
 	&& apt-get purge -y --auto-remove \
 	&& rm -rf /var/lib/apt/lists/*
 
-ARG OPENCV_VERSION=3.3.1
+ARG OPENCV_VERSION=4.0.1
 ENV OPENCV_VERSION $OPENCV_VERSION
 
 	# download latest source & contrib
@@ -72,7 +72,10 @@ RUN	cd /tmp \
 	&& cd / \
 	&& rm -rf /tmp/* \
 	&& pip install imutils picamera \
-	&& pip3 install imutils picamera
+	&& pip3 install imutils picamera \
+        && date \
+        && echo "Raspbian $RASPBIAN_VERSION - OpenCV $OPENCV_VERSION Docker Build finished."
+
 
 ARG VCS_REF
 ARG BUILD_DATE
