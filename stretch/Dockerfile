@@ -1,5 +1,5 @@
 ARG RASPBIAN_VERSION=stretch
-FROM resin/rpi-raspbian:$RASPBIAN_VERSION
+FROM balena/rpi-raspbian:$RASPBIAN_VERSION
 
 ARG RASPBIAN_VERSION
 ARG DEBIAN_FRONTEND=noninteractive

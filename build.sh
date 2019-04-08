@@ -3,8 +3,8 @@
 #Grab the ID of the latest image.
 function fn_getID(){
 	local tag=$1
-	docker pull resin/rpi-raspbian:$tag
-	fn_getID=$( docker images resin/rpi-raspbian:$tag --format "{{.ID}}" )
+	docker pull balena/rpi-raspbian:$tag
+	fn_getID=$( docker images balena/rpi-raspbian:$tag --format "{{.ID}}" )
 	#echo $fn_getID
 }
 
@@ -27,7 +27,7 @@ echo
 echo --------- Starting ------------
 echo 
 
-#Get the ID of the resin/rpi-raspbain image tagged as latest.
+#Get the ID of the balena/rpi-raspbain image tagged as latest.
 fn_getID "latest"
 latestID=$fn_getID
 
