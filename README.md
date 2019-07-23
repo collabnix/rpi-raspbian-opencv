@@ -1,4 +1,5 @@
-# rpi-raspbian-opencv - Docker image of OpenCV for Raspberry Pi. #
+# rpi-raspbian-opencv - A Docker image for Pico with OpenCV inbuilt #
+
 This is a docker image of OpenCV compiled for the Raspberry Pi.  It includes python bindings for both Python2 and Python3.  
 This uses resin.io Raspberry Pi base images and compiles OpenCV 3.3.1+ for python2 and python3.  
 Installation is based upon instructions at http://www.pyimagesearch.com.
